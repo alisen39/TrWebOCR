@@ -35,6 +35,7 @@ TrWebOCR，基于开源项目[Tr]('https://github.com/myhub/tr')构建。
 * SWAP:   2G  
 
 ## 安装说明  
+### 服务器部署
 1. 安装python3.7  
     推荐使用miniconda
     
@@ -58,6 +59,14 @@ python backend/main.py
 # tr 1.5.0 https://github.com/myhub/tr
 server is running: 0.0.0.0:8089
 ```  
+
+### Docker部署
+1. 编译 Dockerfile
+```shell script
+docker build -t TrWebOCR:latest .
+```
+通过Dockerfile能够快速且简单的部署
+
 ## 效果展示  
 
 ![文档识别](https://images.alisen39.com/20200501171943.png)  
