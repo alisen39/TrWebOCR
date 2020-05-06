@@ -60,12 +60,17 @@ python backend/main.py
 server is running: 0.0.0.0:8089
 ```  
 
-### Docker部署
-1. 编译 Dockerfile
+### Docker部署  
+1. 编译 Dockerfile  
 ```shell script
 docker build -t TrWebOCR:latest .
-```
-通过Dockerfile能够快速且简单的部署
+```  
+
+2. Docker run  
+```shell script  
+docker run -itd -p 8089:8089 --name trweb trweb-ocr:latest /bin/bash
+```  
+这里把容器的8089端口映射到了物理机的8089上，但如果你不喜欢映射，去掉run后面的`-p 8089:8089` 也可以使用docker的IP加`8089`来访问
 
 ## 效果展示  
 
