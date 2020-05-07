@@ -9,7 +9,7 @@ TrWebOCR，基于开源项目[Tr]('https://github.com/myhub/tr')构建。
 ## 特性
 * 中文识别  
 快速高识别率
-
+ 
 * 文字检测  
 支持一定角度的旋转  
 
@@ -82,7 +82,7 @@ docker run -itd -p 8089:8089 --name trweb trweb-ocr:latest /bin/bash
 Apache 2.0
 
 ## 鸣谢
-* 感谢 [myhub](https://github.com/myhub) 和它的开源项目[Tr]('https://github.com/myhub/tr') 
+* 感谢 [myhub](https://github.com/myhub) 和它的开源项目[Tr](https://github.com/myhub/tr) 
 
 ## 最后  
 如果你也喜欢这个项目，不妨给个star (^.^)✨
