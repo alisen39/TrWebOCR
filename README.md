@@ -1,7 +1,7 @@
 # TrWebOCR-开源的离线OCR  
 
 ## 介绍
-TrWebOCR，基于开源项目[Tr]('https://github.com/myhub/tr')构建。  
+TrWebOCR，基于开源项目 [Tr](https://github.com/myhub/tr) 构建。  
 在其基础上提供了http调用的接口，便于你在其他的项目中调用。  
 并且提供了易于使用的web页面，便于调试或日常使用。 
 ![web页面](https://images.alisen39.com/20200501170004.png)
@@ -24,9 +24,9 @@ TrWebOCR，基于开源项目[Tr]('https://github.com/myhub/tr')构建。
 * ✔ Ubuntu 16.04
 * ✔ ️Ubuntu 18.04
 * ✔ CentOS 7   
-* ❌ ~~Windows~~
-* ❌ ~~MacOS~~  
-暂时不支持Windows和MacOS的部署，后续会提供docker部署的镜像。  
+* ✔ Docker   
+
+Windows和MacOS系统下可通过构建Docker镜像来使用，暂不支持直接部署使用  
 其他Linux平台暂未测试，可自行安装测试  
 
 ### 最低配置要求  
@@ -70,7 +70,11 @@ docker build -t TrWebOCR:latest .
 ```shell script  
 docker run -itd -p 8089:8089 --name trweb trweb-ocr:latest /bin/bash
 ```  
-这里把容器的8089端口映射到了物理机的8089上，但如果你不喜欢映射，去掉run后面的`-p 8089:8089` 也可以使用docker的IP加`8089`来访问
+这里把容器的8089端口映射到了物理机的8089上，但如果你不喜欢映射，去掉run后面的`-p 8089:8089` 也可以使用docker的IP加`8089`来访问  
+
+## 接口文档  
+接口文档的内容放在了本项目的wiki里：
+[接口文档](https://github.com/alisen39/TrWebOCR/wiki/%E6%8E%A5%E5%8F%A3%E6%96%87%E6%A1%A3)  
 
 ## 效果展示  
 
