@@ -18,10 +18,12 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 import json
-from backend.np_encoder import NpEncoder
+from backend.tools.np_encoder import NpEncoder
 import os
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if not os.path.exists('./logs'):
+    os.mkdir('./logs')
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=logging.INFO)
@@ -57,10 +59,13 @@ class TrRun(tornado.web.RequestHandler):
 
         '''
         start_time = time.time()
+        MAX_SIZE = 1600
 
         img_up = self.request.files.get('file', None)
         img_b64 = self.get_argument('img', None)
+        img_compress = self.get_argument('compress', None)
 
+        # 判断是上传的图片还是base64
         self.set_header('content-type', 'application/json')
         up_image_type = None
         if img_up is not None and len(img_up) > 0:
@@ -94,13 +99,34 @@ class TrRun(tornado.web.RequestHandler):
             return
         img = img.convert("RGB")
 
-        # TODO feature
         '''
         是否开启图片压缩
-        开启后，图片最大宽高为1600px。
-        可自定义。
+        默认为1600px
+        值为 0 时表示不开启压缩
+        非 0 时则压缩到该值的大小
         '''
-        MAX_SIZE = 1600
+        if img_compress is not None:
+            try:
+                img_compress = int(img_compress)
+            except ValueError as ex:
+                self.finish(json.dumps({'code': 400, 'msg': 'compress参数类型有误，只能是int类型'}, cls=NpEncoder))
+                return
+
+            if img_compress < 1:
+                MAX_SIZE = max(img.height, img.width)
+            else:
+                MAX_SIZE = img_compress
+
+            # elif :
+            #     if img_compress < 1:
+            #         self.finish(json.dump({'code': 400, 'msg': 'compress值不能小于0哦'}, cls=NpEncoder))
+            #         return
+            #     else:
+            #         MAX_SIZE = img_compress
+            # else:
+            #     self.finish(json.dumps({'code': 400, 'msg': 'compress参数类型有误，只能是int类型'}, cls=NpEncoder))
+            #     return
+
         if img.height > MAX_SIZE or img.width > MAX_SIZE:
             scale = max(img.height / MAX_SIZE, img.width / MAX_SIZE)
 
@@ -138,19 +164,3 @@ class TrRun(tornado.web.RequestHandler):
                       'speed_time': round(time.time() - start_time, 2)}},
             cls=NpEncoder))
         return
-
-        # if img_b64 is None:
-        #     self.set_status(404)
-        #     self.write('参数不正确')
-
-        # try:
-        #     raw_image = base64.b64decode(img_b64.encode('utf8'))
-        #     img = Image.open(BytesIO(raw_image))
-        #     txt, confidence = tr.recognize(img)
-
-        #
-        #     self.write(txt)
-        # except Exception as ex:
-        #     logger.exception(ex)
-        #     self.set_status(404)
-        #     self.write(str(ex))

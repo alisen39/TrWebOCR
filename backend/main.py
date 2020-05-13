@@ -4,6 +4,7 @@
 # time: 2020/4/28 14:54
 import os
 import sys
+
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_PATH)
 
@@ -13,6 +14,7 @@ import tornado.web
 import tornado.httpserver
 import tornado.ioloop
 from tornado.web import StaticFileHandler
+from backend.tools.get_host_ip import host_ip
 
 current_path = os.path.dirname(__file__)
 settings = dict(
@@ -40,7 +42,7 @@ if __name__ == "__main__":
     # server.listen(port)
     server.bind(port)
     server.start(1)
-    print('server is running: %s' % '0.0.0.0:' + str(8089))
+    print(f'server is running: {host_ip()}:{port}')
 
     # tornado.ioloop.IOLoop.instance().start()
     tornado.ioloop.IOLoop.current().start()
