@@ -63,7 +63,7 @@ class TrRun(tornado.web.RequestHandler):
 
         img_up = self.request.files.get('file', None)
         img_b64 = self.get_argument('img', None)
-        img_compress = self.get_argument('compress', None)
+        compress_size = self.get_argument('compress', None)
 
         # 判断是上传的图片还是base64
         self.set_header('content-type', 'application/json')
@@ -105,24 +105,24 @@ class TrRun(tornado.web.RequestHandler):
         值为 0 时表示不开启压缩
         非 0 时则压缩到该值的大小
         '''
-        if img_compress is not None:
+        if compress_size is not None:
             try:
-                img_compress = int(img_compress)
+                compress_size = int(compress_size)
             except ValueError as ex:
                 self.finish(json.dumps({'code': 400, 'msg': 'compress参数类型有误，只能是int类型'}, cls=NpEncoder))
                 return
 
-            if img_compress < 1:
+            if compress_size < 1:
                 MAX_SIZE = max(img.height, img.width)
             else:
-                MAX_SIZE = img_compress
+                MAX_SIZE = compress_size
 
             # elif :
-            #     if img_compress < 1:
+            #     if compress_size < 1:
             #         self.finish(json.dump({'code': 400, 'msg': 'compress值不能小于0哦'}, cls=NpEncoder))
             #         return
             #     else:
-            #         MAX_SIZE = img_compress
+            #         MAX_SIZE = compress_size
             # else:
             #     self.finish(json.dumps({'code': 400, 'msg': 'compress参数类型有误，只能是int类型'}, cls=NpEncoder))
             #     return
