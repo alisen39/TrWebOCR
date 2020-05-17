@@ -3,8 +3,9 @@
 ## 介绍
 TrWebOCR，基于开源项目 [Tr](https://github.com/myhub/tr) 构建。  
 在其基础上提供了http调用的接口，便于你在其他的项目中调用。  
-并且提供了易于使用的web页面，便于调试或日常使用。 
-![web页面](https://images.alisen39.com/20200501170004.png)
+并且提供了易于使用的web页面，便于调试或日常使用。   
+
+![web页面](https://images.alisen39.com/20200517184619.png)  
 
 ## 特性
 * 中文识别  
@@ -102,4 +103,6 @@ Apache 2.0
 * 感谢 [myhub](https://github.com/myhub) 和它的开源项目[Tr](https://github.com/myhub/tr) 
 
 ## 最后  
+项目在[GitHub](https://github.com/alisen39/TrWebOCR)和[码云](https://gitee.com/alisen39/TrWebOCR)上同步更新，国内朋友可以通过码云clone项目~  
+  
 如果你也喜欢这个项目，不妨给个star (^.^)✨
