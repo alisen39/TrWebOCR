@@ -8,13 +8,16 @@ import sys
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_PATH)
 
-from backend.webInterface import tr_run
-from backend.webInterface import tr_index
 import tornado.web
 import tornado.httpserver
 import tornado.ioloop
 from tornado.web import StaticFileHandler
 from backend.tools.get_host_ip import host_ip
+from backend.webInterface import tr_run
+from backend.webInterface import tr_index
+from backend.tools import log
+import logging
+logger = logging.getLogger(log.LOGGER_ROOT_NAME+'.'+__name__)
 
 current_path = os.path.dirname(__file__)
 settings = dict(
@@ -34,7 +37,6 @@ def make_app():
 
 
 if __name__ == "__main__":
-    BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     port = 8089
     app = make_app()

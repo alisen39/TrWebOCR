@@ -2,41 +2,24 @@
 # encoding: utf-8
 # author:alisen
 # time: 2020/4/29 10:47
-# import json
-import time
 
+import time
 import tr
 import tornado.web
 import tornado.gen
 import tornado.httpserver
-
 import base64
 from PIL import Image, ImageDraw
 from io import BytesIO
 import datetime
-import logging
-from logging.handlers import RotatingFileHandler
-
 import json
+
 from backend.tools.np_encoder import NpEncoder
-import os
+from backend.tools import log
+import logging
 
-BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if not os.path.exists('./logs'):
-    os.mkdir('./logs')
+logger = logging.getLogger(log.LOGGER_ROOT_NAME + '.' +__name__)
 
-logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.INFO)
-rHandler = RotatingFileHandler(os.path.join(BASE_PATH, 'logs/log.log'), maxBytes=1 * 1024 * 1024, backupCount=3)
-rHandler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-rHandler.setFormatter(formatter)
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-console.setFormatter(formatter)
-
-logger.addHandler(rHandler)
-logger.addHandler(console)
 
 
 class TrRun(tornado.web.RequestHandler):
@@ -44,10 +27,9 @@ class TrRun(tornado.web.RequestHandler):
     使用 tr 的 run 方法
     '''
 
-    # TODO 图片过大会爆内存而退出； 增大 swap 空间
-
     def get(self):
-        self.write("Error Request")
+        self.set_status(404)
+        self.write("404 : Please use POST")
 
     @tornado.gen.coroutine
     def post(self):
@@ -94,7 +76,7 @@ class TrRun(tornado.web.RequestHandler):
                     img = img.rotate(90, expand=True)
         except Exception as ex:
             error_log = json.dumps({'code': 400, 'msg': '产生了一点错误，请检查日志', 'err': str(ex)}, cls=NpEncoder)
-            logger.error(error_log)
+            logger.error(error_log, exc_info=True)
             self.finish(error_log)
             return
         img = img.convert("RGB")
@@ -109,6 +91,7 @@ class TrRun(tornado.web.RequestHandler):
             try:
                 compress_size = int(compress_size)
             except ValueError as ex:
+                logger.error(exc_info=True)
                 self.finish(json.dumps({'code': 400, 'msg': 'compress参数类型有误，只能是int类型'}, cls=NpEncoder))
                 return
 
@@ -116,16 +99,6 @@ class TrRun(tornado.web.RequestHandler):
                 MAX_SIZE = max(img.height, img.width)
             else:
                 MAX_SIZE = compress_size
-
-            # elif :
-            #     if compress_size < 1:
-            #         self.finish(json.dump({'code': 400, 'msg': 'compress值不能小于0哦'}, cls=NpEncoder))
-            #         return
-            #     else:
-            #         MAX_SIZE = compress_size
-            # else:
-            #     self.finish(json.dumps({'code': 400, 'msg': 'compress参数类型有误，只能是int类型'}, cls=NpEncoder))
-            #     return
 
         if img.height > MAX_SIZE or img.width > MAX_SIZE:
             scale = max(img.height / MAX_SIZE, img.width / MAX_SIZE)
@@ -157,7 +130,6 @@ class TrRun(tornado.web.RequestHandler):
             'time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         logger.info(json.dumps(log_info, cls=NpEncoder))
-
         self.finish(json.dumps(
             {'code': 200, 'msg': '成功',
              'data': {'img_detected': 'data:image/jpeg;base64,' + img_detected_b64, 'raw_out': res,
