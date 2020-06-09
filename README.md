@@ -84,14 +84,11 @@ docker run -itd -p 8089:8089 --name trweb trweb-ocr:latest /bin/bash
 ![验证码识别](https://images.alisen39.com/20200501173211.png)
 
 ## 更新记录  
+* 2020年06月09日  
+    添加前端部分代码
 
-* 2020年05月17日  
-    web页增加压缩功能  
-
-* 2020年05月13日  
-    解决首次使用缺少logs目录的bug  
-    运行时显示的host名  
-    tr-run接口增加压缩字段  
+* 2020年05月29日  
+    优化logging功能
 
 [更多记录 >>>](https://github.com/alisen39/TrWebOCR/blob/master/updateHistory.md)  
 

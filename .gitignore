@@ -1,5 +1,6 @@
 backend/libtorch/lib/libtorch.so
-fontend/
+test/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -105,6 +106,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.env.stage
 
 # Spyder project settings
 .spyderproject
