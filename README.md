@@ -74,8 +74,35 @@ docker run -itd -p 8089:8089 --name trweb trweb-ocr:latest /bin/bash
 这里把容器的8089端口映射到了物理机的8089上，但如果你不喜欢映射，去掉run后面的`-p 8089:8089` 也可以使用docker的IP加`8089`来访问  
 
 ## 接口文档  
-接口文档的内容放在了本项目的wiki里：
-[接口文档](https://github.com/alisen39/TrWebOCR/wiki/%E6%8E%A5%E5%8F%A3%E6%96%87%E6%A1%A3)  
+接口文档的内容放在了本项目的wiki里：  
+[接口文档](https://github.com/alisen39/TrWebOCR/wiki/%E6%8E%A5%E5%8F%A3%E6%96%87%E6%A1%A3)    
+
+## 接口调用示例  
+* Python 使用File上传文件  
+``` python
+import requests
+url = 'http://192.168.31.108:8089/api/tr-run/'
+img1_file = {
+    'file': open('img1.png', 'rb')
+}
+res = requests.post(url=url, data={'compress': 0}, files=img1_file)
+```  
+
+* Python 使用Base64  
+``` python
+import requests
+import base64
+def img_to_base64(img_path):
+    with open(img_path, 'rb')as read:
+        b64 = base64.b64encode(read.read())
+    return b64
+    
+url = 'http://192.168.31.108:8089/api/tr-run/'
+img_b64 = img_to_base64('./img1.png')
+res = requests.post(url=url, data={'img': img_b64})
+```
+
+
 
 ## 效果展示  
 
@@ -84,11 +111,11 @@ docker run -itd -p 8089:8089 --name trweb trweb-ocr:latest /bin/bash
 ![验证码识别](https://images.alisen39.com/20200501173211.png)
 
 ## 更新记录  
+* 2020年06月13日  
+    增加接口调用示例  
+    
 * 2020年06月09日  
     添加前端部分代码
-
-* 2020年05月29日  
-    优化logging功能
 
 [更多记录 >>>](https://github.com/alisen39/TrWebOCR/blob/master/updateHistory.md)  
 
