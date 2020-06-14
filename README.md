@@ -64,13 +64,15 @@ server is running: 0.0.0.0:8089
 ### Docker部署  
 1. 编译 Dockerfile  
 ```shell script
-docker build -t TrWebOCR:latest .
+docker build -t trwebocr:latest .
 ```  
 
 2. Docker run  
 ```shell script  
-docker run -itd -p 8089:8089 --name trweb trweb-ocr:latest /bin/bash
+docker run --name trwebocr -p 8089:8089 -itd trwebocr:latest /bin/bash
+
 ```  
+
 这里把容器的8089端口映射到了物理机的8089上，但如果你不喜欢映射，去掉run后面的`-p 8089:8089` 也可以使用docker的IP加`8089`来访问  
 
 ## 接口文档  
@@ -111,11 +113,13 @@ res = requests.post(url=url, data={'img': img_b64})
 ![验证码识别](https://images.alisen39.com/20200501173211.png)
 
 ## 更新记录  
+
+* 2020年06月14日  
+    优化Dockerfile，解决Build失败报错
+    Dockerfile需要下载的部分使用国内源，提高build速度
+
 * 2020年06月13日  
     增加接口调用示例  
-    
-* 2020年06月09日  
-    添加前端部分代码
 
 [更多记录 >>>](https://github.com/alisen39/TrWebOCR/blob/master/updateHistory.md)  
 
