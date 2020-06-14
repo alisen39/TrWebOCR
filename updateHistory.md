@@ -2,6 +2,7 @@
 * 2020年06月14日  
     优化Dockerfile，解决Build失败报错
     Dockerfile需要下载的部分使用国内源，提高build速度
+    增加supervisor守护python进程
     
 * 2020年06月13日  
     增加接口调用示例

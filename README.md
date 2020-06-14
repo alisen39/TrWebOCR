@@ -69,8 +69,7 @@ docker build -t trwebocr:latest .
 
 2. Docker run  
 ```shell script  
-docker run --name trwebocr -p 8089:8089 -itd trwebocr:latest /bin/bash
-
+docker run -itd -p 8089:8089 --name trwebocr trwebocr:latest 
 ```  
 
 这里把容器的8089端口映射到了物理机的8089上，但如果你不喜欢映射，去掉run后面的`-p 8089:8089` 也可以使用docker的IP加`8089`来访问  
@@ -117,6 +116,7 @@ res = requests.post(url=url, data={'img': img_b64})
 * 2020年06月14日  
     优化Dockerfile，解决Build失败报错
     Dockerfile需要下载的部分使用国内源，提高build速度
+    增加supervisor守护python进程
 
 * 2020年06月13日  
     增加接口调用示例  
