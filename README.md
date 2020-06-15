@@ -62,9 +62,15 @@ server is running: 0.0.0.0:8089
 ```  
 
 ### Docker部署  
-1. 编译 Dockerfile  
+1. 从 Dockerfile 构建或者直接 `Pull`镜像  
 ```shell script
+# dockerfile 构建
 docker build -t trwebocr:latest .
+```  
+
+```shell script
+# 从 dockerhub pull
+docker pull mmmz/trwebocr:latest
 ```  
 
 2. Docker run  
