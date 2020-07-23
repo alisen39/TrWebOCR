@@ -62,15 +62,21 @@ server is running: 0.0.0.0:8089
 ```  
 
 ### Docker部署  
-1. 从 Dockerfile 构建或者直接 `Pull`镜像  
+使用 Dockerfile 构建 或者直接 Pull镜像  
 ```shell script
 # dockerfile 构建
 docker build -t trwebocr:latest .
+
+# 运行镜像
+docker run -itd --rm -p 8089:8089 --name trwebocr trwebocr:latest 
 ```  
 
 ```shell script
 # 从 dockerhub pull
 docker pull mmmz/trwebocr:latest
+
+# 运行镜像
+docker run -itd --rm -p 8089:8089 --name trwebocr mmmz/trwebocr:latest 
 ```  
 
 2. Docker run  
@@ -118,7 +124,9 @@ res = requests.post(url=url, data={'img': img_b64})
 ![验证码识别](https://images.alisen39.com/20200501173211.png)
 
 ## 更新记录  
-
+* 2020年07月23日  
+    修改README  
+    
 * 2020年06月14日  
     优化Dockerfile，解决Build失败报错
     Dockerfile需要下载的部分使用国内源，提高build速度

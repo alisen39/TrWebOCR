@@ -1,4 +1,7 @@
-## 更新记录
+## 更新记录  
+* 2020年07月23日  
+    修改README  
+    
 * 2020年06月14日  
     优化Dockerfile，解决Build失败报错
     Dockerfile需要下载的部分使用国内源，提高build速度
