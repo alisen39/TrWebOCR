@@ -1,276 +1,248 @@
 # coding: utf-8
-import numpy
-from PIL import Image
-import os, time, platform
+import os
+import platform
 import ctypes
-import cv2
-from functools import cmp_to_key
+import numpy as np
+
+try:
+    unichr
+except NameError:
+    unichr = chr
+
+CV_8UC1 = 0
+CV_32FC1 = 5
+CV_8UC3 = 16
+CV_32FC3 = 21
 
 FLAG_RECT = (1 << 0)
 FLAG_ROTATED_RECT = (1 << 1)
-FLAG_CRNN_PROB = (1 << 16)
-FLAG_CRNN_INDEX = (1 << 17)
 
+ORT_DISABLE_ALL = 0
+ORT_ENABLE_BASIC = 1
+ORT_ENABLE_EXTENDED = 2
+ORT_ENABLE_ALL = 99
+
+RECT_SIZE = 6
+ORT_SIZE = 256
 _BASEDIR = os.path.dirname(os.path.abspath(__file__))
-with open(os.path.join(_BASEDIR, "char_table.txt"), "r", encoding="utf-8") as f:
-    char_table = " " + f.read()
-
-_cwd = os.getcwd()
-os.chdir(_BASEDIR)
 
 if platform.system() == "Windows":
-    _libc = ctypes.cdll.LoadLibrary(os.path.join(_BASEDIR, 'libtr.dll'))
+    raise NotImplementedError()
 else:
     _libc = ctypes.cdll.LoadLibrary(os.path.join(_BASEDIR, 'libtr.so'))
 assert _libc is not None
 
-_libc.tr_init.restype = ctypes.c_int
-_libc.tr_detect.argtypes = (ctypes.c_void_p,)
+_libc.tr_init.argtypes = (
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_void_p
+)
+
+_libc.tr_release.argtypes = (ctypes.c_int,)
 
 _libc.tr_detect.restype = ctypes.c_int
-_libc.tr_detect.argtypes = (ctypes.c_void_p, ctypes.c_void_p,
-                            ctypes.c_int, ctypes.c_int)
+_libc.tr_detect.argtypes = (
+    ctypes.c_int,
+    ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_void_p, ctypes.c_int
+)
 
-_libc.tr_read_float.restype = ctypes.c_int
-_libc.tr_read_float.argtypes = (ctypes.c_void_p, ctypes.c_int)
+_libc.tr_recognize.restype = ctypes.c_int
+_libc.tr_recognize.argtypes = (
+    ctypes.c_int,
+    ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int
+)
 
-_libc.tr_read_int.restype = ctypes.c_int
-_libc.tr_read_int.argtypes = (ctypes.c_void_p, ctypes.c_int)
+_libc.tr_run.restype = ctypes.c_int
+_libc.tr_run.argtypes = (
+    ctypes.c_int, ctypes.c_int,
+    ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_void_p, ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int
+)
 
-_libc.tr_init()
-os.chdir(_cwd)
+_libc.tr_crnn.restype = ctypes.c_int
+_libc.tr_crnn.argtypes = (
+    ctypes.c_int,
+    ctypes.c_void_p, ctypes.c_int, ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int
+)
 
-line_count = 0
+def c_ptr(arr):
+    if not isinstance(arr, (np.ndarray, str)):
+        arr = np.array(arr)
 
-
-def _read(arr, flag):
-    if arr.dtype == numpy.int32:
-        nbytes = _libc.tr_read_int(
-            numpy.ctypeslib.as_ctypes(arr),
-            flag)
-        return nbytes == arr.nbytes
-    elif arr.dtype == numpy.float32:
-        nbytes = _libc.tr_read_float(
-            numpy.ctypeslib.as_ctypes(arr),
-            flag)
-        return nbytes == arr.nbytes
+    if isinstance(arr, np.ndarray):
+        assert arr.flags['C_CONTIGUOUS']
+        return np.ctypeslib.as_ctypes(arr)
+    elif isinstance(arr, str):
+        return ctypes.create_string_buffer(arr.encode())
     else:
         raise NotImplementedError()
 
 
-def recognize(img):
-    if isinstance(img, numpy.ndarray):
-        height, width = img.shape
-        if height != 32:
-            new_width = int(width * 32 / height + 0.5)
-            img_arr = cv2.resize(img, (new_width, 32), cv2.INTER_CUBIC)
-        else:
-            img_arr = img
-    else:
-        if isinstance(img, str):
-            img_pil = Image.open(img).convert("L")
-        elif isinstance(img, Image.Image):
-            if img.mode != "L":
-                img_pil = img.convert("L")
-            else:
-                img_pil = img
-        else:
+def c_img(arr):
+    if not isinstance(arr, (np.ndarray, str)):
+        arr = np.array(arr)
+
+    if isinstance(arr, str):
+        return c_ptr(arr), 0, 0, 0
+    elif isinstance(arr, np.ndarray):
+        res = [None, 0, 0, 0]
+        res[0] = c_ptr(arr)
+        res[1] = arr.shape[0]
+        res[2] = arr.shape[1]
+
+        channel = 0
+        if arr.ndim == 2:
+            channel = 1
+        elif arr.ndim == 3:
+            channel = arr.shape[2]
+
+        if channel not in [1, 3]:
             raise NotImplementedError()
 
-        if img_pil.height != 32:
-            new_width = int(img_pil.width * 32 / (img_pil.height + 0.5))
-            # new_width = int(img_pil.width * 32 / img_pil.height + 0.5)
-            img_pil = img_pil.resize((new_width, 32), Image.BICUBIC)
+        if arr.dtype == np.uint8:
+            res[3] = CV_8UC3 if channel == 3 else CV_8UC1
+        elif arr.dtype == np.float32:
+            res[3] = CV_32FC3 if channel == 3 else CV_32FC1
 
-        img_arr = numpy.asarray(img_pil, dtype="float32") / 255.
+        return tuple(res)
+    else:
+        raise NotImplementedError()
 
-    # img_arr = (img_arr - img_arr.min()) / (img_arr.max() - img_arr.min())
 
-    # global line_count
-    # line_count += 1
-    # cv2.imwrite("tmp/" + str(line_count) + ".png", img_arr * 255.0)
+def init(pid, id, model, arg=None):
+    """
+    :param pid: process id
+    :param id: session id
+    :param model: model path
+    :param arg: extra arguments
+    :return: None
+    """
+    _cwd = os.getcwd()
+    os.chdir(_BASEDIR)
 
-    # img_arr = (img_arr - 0.5) * 2
-    # print("img_arr", img_arr.min(), img_arr.max())
+    _libc.tr_init(pid, id, c_ptr(model), arg)
 
-    height, width = img_arr.shape
-    size = numpy.array([width, height], dtype="int32")
+    os.chdir(_cwd)
 
-    num = _libc.tr_recognize(
-        numpy.ctypeslib.as_ctypes(img_arr),
-        numpy.ctypeslib.as_ctypes(size),
-        2,
-    )
 
-    if num <= 0:
-        return None, None
-
-    crnn_prob = numpy.zeros((num,), "float32")
-    crnn_index = numpy.zeros((num,), "int32")
-
-    if not _read(crnn_prob, FLAG_CRNN_PROB):
-        return None, None
-    if not _read(crnn_index, FLAG_CRNN_INDEX):
-        return None, None
-
+def _parse(unicode_arr, prob_arr, num):
     txt = ""
     prob = 0.
-    idx_pre = -1
+    unicode_pre = -1
     count = 0
     for pos in range(num):
-        idx = crnn_index[pos]
-        if idx > 0:
-            if idx != idx_pre:
-                txt += char_table[idx]
-
-            # txt += char_table[idx]
+        unicode = unicode_arr[pos]
+        if unicode >= 0:
+            if unicode != unicode_pre:
+                txt += unichr(unicode)
 
             count += 1
-            prob += crnn_prob[pos]
+            prob += prob_arr[pos]
 
-        idx_pre = idx
+        unicode_pre = unicode
 
     return txt, float(prob / max(count, 1))
 
 
-def detect(img, flag=FLAG_RECT):
-    if isinstance(img, str):
-        img_pil = Image.open(img).convert("L")
-    elif isinstance(img, Image.Image):
-        if img.mode != "L":
-            img_pil = img.convert("L")
-        else:
-            img_pil = img
-    else:
-        raise NotImplementedError()
+def crnn(img, max_items=512*7000, crnn_id=1):
+    buf_arr = np.zeros((max_items,), dtype="float32")
+    shape_arr = np.zeros((8,), dtype="int32")
+    img = c_img(img)
 
-    img_arr = numpy.asarray(img_pil, dtype="float32") / 255
+    assert img[3] == CV_32FC1
+    assert img[1] == 32
 
-    size = numpy.array([img_pil.width, img_pil.height], dtype="int32")
-
-    num = _libc.tr_detect(
-        numpy.ctypeslib.as_ctypes(img_arr),
-        numpy.ctypeslib.as_ctypes(size),
-        2,
-        flag
+    num = _libc.tr_crnn(
+        crnn_id,
+        img[0], img[1], img[2],
+        c_ptr(buf_arr),
+        c_ptr(shape_arr),
+        max_items
     )
 
-    if num <= 0:
-        return None
-
-    if flag == FLAG_RECT:
-        rect_arr = numpy.zeros((num, 4), "float32")
-    elif flag == FLAG_ROTATED_RECT:
-        rect_arr = numpy.zeros((num, 5), "float32")
-    else:
-        raise NotImplementedError(flag)
-
-    if not _read(rect_arr, flag):
-        return None
-
-    return rect_arr
+    buf_arr = buf_arr[:num]
+    return buf_arr.reshape(shape_arr[0], shape_arr[2])
 
 
-def _sort_blocks(blocks):
-    def block_cmp(b1, b2):
-        list1 = [b1[0][0], b1[0][1], b1[0][2], b1[0][3]]
-        list2 = [b2[0][0], b2[0][1], b2[0][2], b2[0][3]]
-        if len(b1[0]) == 4:
-            list1[0] += list1[2] / 2
-            list1[1] += list1[3] / 2
-            list2[0] += list2[2] / 2
-            list2[1] += list2[3] / 2
+def recognize(img, max_width=512, crnn_id=1):
+    unicode_arr = np.zeros((max_width,), dtype="int32")
+    prob_arr = np.zeros((max_width,), dtype="float32")
+    img = c_img(img)
+    num = _libc.tr_recognize(
+        crnn_id,
+        img[0], img[1], img[2], img[3],
+        c_ptr(unicode_arr),
+        c_ptr(prob_arr),
+        max_width
+    )
 
-        flag = 1
-        if list1[0] > list2[0]:
-            list1, list2 = list2, list1
-            flag = -1
-
-        if list2[1] + list1[3] / 2 < list1[1]:
-            return flag
-        return -flag
-
-    blocks.sort(key=cmp_to_key(block_cmp), reverse=False)
+    return _parse(unicode_arr, prob_arr, num)
 
 
-def run_angle(img, px=0, py=2):
-    if isinstance(img, str):
-        img_pil = Image.open(img).convert("L")
-    elif isinstance(img, Image.Image):
-        if img.mode != "L":
-            img_pil = img.convert("L")
-        else:
-            img_pil = img
-    else:
-        raise NotImplementedError()
+def detect(img, max_lines=512, flag=FLAG_ROTATED_RECT, ctpn_id=0):
+    rect_arr = np.zeros((max_lines, RECT_SIZE), dtype="float32")
+    img = c_img(img)
+    num = _libc.tr_detect(
+        ctpn_id,
+        img[0], img[1], img[2], img[3],
+        flag,
+        c_ptr(rect_arr),
+        max_lines
+    )
 
-    img_arr = numpy.asarray(img_pil, dtype="float32") / 255.0
-    rect_arr = detect(img_pil, FLAG_ROTATED_RECT)
+    return rect_arr[:num, :5].tolist()
 
-    if rect_arr is None:
-        return []
+
+def release(*args):
+    for arg in args:
+        _libc.tr_release(arg)
+
+
+def run(img,
+        max_lines=512,
+        flag=FLAG_ROTATED_RECT,
+        max_width=512,
+        ctpn_id=0,
+        crnn_id=1):
+    rect_arr = np.zeros((max_lines, RECT_SIZE), dtype="float32")
+    unicode_arr = np.zeros((max_lines, max_width), dtype="int32")
+    prob_arr = np.zeros((max_lines, max_width), dtype="float32")
+    img = c_img(img)
+    line_num = _libc.tr_run(
+        ctpn_id, crnn_id,
+        img[0], img[1], img[2], img[3],
+        flag,
+        c_ptr(rect_arr),
+        max_lines,
+        c_ptr(unicode_arr),
+        c_ptr(prob_arr),
+        max_width
+    )
 
     results = []
-    for rect in rect_arr:
-        cx, cy, w, h, a = rect
-        if a < -45:
-            w, h = h, w
-            a += 90
-        w += px * 2
-        h += py * 2
-        box1 = cv2.boxPoints(((cx, cy), (w, h), a))
+    for i in range(line_num):
+        num = int(rect_arr[i][-1] + 0.5)
+        txt, confidence = _parse(unicode_arr[i], prob_arr[i], num)
+        results.append((rect_arr[i][:5].tolist(), txt, confidence))
 
-        w = int(w + 0.5)
-        h = int(h + 0.5)
-        box2 = numpy.array([[0, h - 1],
-                            [0, 0],
-                            [w - 1, 0],
-                            [w - 1, h - 1]], dtype="float32")
-
-        matrix = cv2.getPerspectiveTransform(box1, box2)
-        img_line = cv2.warpPerspective(img_arr, matrix, (w, h), flags=cv2.INTER_CUBIC, borderValue=1.0)
-
-        txt, prob = recognize(img_line)
-
-        if txt != "":
-            results.append(((cx, cy, w, h, a), txt, prob))
-
-    _sort_blocks(results)
     return results
 
 
-def run(img, px=3, py=0):
-    if isinstance(img, str):
-        img_pil = Image.open(img).convert("L")
-    elif isinstance(img, Image.Image):
-        if img.mode != "L":
-            img_pil = img.convert("L")
-        else:
-            img_pil = img
-    else:
-        raise NotImplementedError()
-
-    rect_arr = detect(img_pil, FLAG_RECT)
-    if rect_arr is None:
-        return []
-
-    rect_arr = numpy.int0(rect_arr)
-
-    results = []
-    for rect in rect_arr:
-        x, y, w, h = rect
-        x -= px
-        w += px * 2
-        line_pil = img_pil.crop((x, y, x + w, y + h))
-
-        txt, prob = recognize(line_pil)
-
-        if txt != "":
-            results.append(((x, y, w, h), txt, prob))
-
-    _sort_blocks(results)
-    return results
-
+init(0, 0, "ctpn.bin")
+init(0, 1, "crnn.bin")
 
 if __name__ == "__main__":
     pass
