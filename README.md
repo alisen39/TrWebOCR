@@ -118,6 +118,8 @@ res = requests.post(url=url, data={'img': img_b64})
 ![验证码识别](https://images.alisen39.com/20200501173211.png)
 
 ## 更新记录  
+* 2020年07月30日  
+    支持启动命令选择GPU/CPU  
 
 * 2020年07月26日  
 	更新tr2.0版，支持GPU  
