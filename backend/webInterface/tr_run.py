@@ -6,7 +6,7 @@
 import time
 import cv2
 import numpy as np
-import tr
+from backend.tr import tr
 import tornado.web
 import tornado.gen
 import tornado.httpserver
@@ -129,7 +129,8 @@ class TrRun(tornado.web.RequestHandler):
             box = np.int0(np.round(box))
 
             for p1, p2 in [(0, 1), (1, 2), (2, 3), (3, 0)]:
-                img_draw.line(xy=(box[p1][0], box[p1][1], box[p2][0], box[p2][1]), fill=colors[i % len(colors)], width=2)
+                img_draw.line(xy=(box[p1][0], box[p1][1], box[p2][0], box[p2][1]), fill=colors[i % len(colors)],
+                              width=2)
 
         output_buffer = BytesIO()
         img_detected.save(output_buffer, format='JPEG')
