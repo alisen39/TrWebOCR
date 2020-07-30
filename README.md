@@ -56,11 +56,11 @@ python backend/main.py
 ```  
 
 项目默认运行在8089端口，看到以下输出则代表运行成功：  
-```shell script
-# tr 1.5.0 https://github.com/myhub/tr
-server is running: 0.0.0.0:8089
-```  
-
+``` shell script
+python backend/main.py [--port=8089][--open_gpu=0]
+# --port 指定运行时端口号 默认是8089  
+# --open_gpu 是否开启gpu 默认是0(不开启），可设置为1（开启）
+```
 ### Docker部署  
 使用 Dockerfile 构建 或者直接 Pull镜像  
 ```shell script
@@ -118,6 +118,10 @@ res = requests.post(url=url, data={'img': img_b64})
 ![验证码识别](https://images.alisen39.com/20200501173211.png)
 
 ## 更新记录  
+
+* 2020年07月26日  
+	更新tr2.0版，支持GPU  
+
 * 2020年07月23日  
     修改README  
     

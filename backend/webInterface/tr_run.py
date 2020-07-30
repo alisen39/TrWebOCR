@@ -4,7 +4,9 @@
 # time: 2020/4/29 10:47
 
 import time
-import tr
+import cv2
+import numpy as np
+from backend.tr import tr
 import tornado.web
 import tornado.gen
 import tornado.httpserver
@@ -18,8 +20,7 @@ from backend.tools.np_encoder import NpEncoder
 from backend.tools import log
 import logging
 
-logger = logging.getLogger(log.LOGGER_ROOT_NAME + '.' +__name__)
-
+logger = logging.getLogger(log.LOGGER_ROOT_NAME + '.' + __name__)
 
 
 class TrRun(tornado.web.RequestHandler):
@@ -68,12 +69,13 @@ class TrRun(tornado.web.RequestHandler):
             if hasattr(img, '_getexif') and img._getexif() is not None:
                 orientation = 274
                 exif = dict(img._getexif().items())
-                if exif[orientation] == 3:
-                    img = img.rotate(180, expand=True)
-                elif exif[orientation] == 6:
-                    img = img.rotate(270, expand=True)
-                elif exif[orientation] == 8:
-                    img = img.rotate(90, expand=True)
+                if orientation in exif:
+                    if exif[orientation] == 3:
+                        img = img.rotate(180, expand=True)
+                    elif exif[orientation] == 6:
+                        img = img.rotate(270, expand=True)
+                    elif exif[orientation] == 8:
+                        img = img.rotate(90, expand=True)
         except Exception as ex:
             error_log = json.dumps({'code': 400, 'msg': '产生了一点错误，请检查日志', 'err': str(ex)}, cls=NpEncoder)
             logger.error(error_log, exc_info=True)
@@ -105,9 +107,9 @@ class TrRun(tornado.web.RequestHandler):
 
             new_width = int(img.width / scale + 0.5)
             new_height = int(img.height / scale + 0.5)
-            img = img.resize((new_width, new_height), Image.BICUBIC)
+            img = img.resize((new_width, new_height), Image.ANTIALIAS)
 
-        res = tr.run(img)
+        res = tr.run(img.copy().convert("L"), flag=tr.FLAG_ROTATED_RECT)
 
         img_detected = img.copy()
         img_draw = ImageDraw.Draw(img_detected)
@@ -115,9 +117,20 @@ class TrRun(tornado.web.RequestHandler):
 
         for i, r in enumerate(res):
             rect, txt, confidence = r
-            x, y, w, h = rect
-            for xy in [(x, y, x + w, y), (x + w, y, x + w, y + h), (x + w, y + h, x, y + h), (x, y + h, x, y)]:
-                img_draw.line(xy=xy, fill=colors[i % len(colors)], width=2)
+            ''' 
+                cx: 中心点x
+                xy: 中心点y
+                w:  宽度
+                h:  高度
+                a:  旋转角度
+            '''
+            cx, cy, w, h, a = rect
+            box = cv2.boxPoints(((cx, cy), (w, h), a))
+            box = np.int0(np.round(box))
+
+            for p1, p2 in [(0, 1), (1, 2), (2, 3), (3, 0)]:
+                img_draw.line(xy=(box[p1][0], box[p1][1], box[p2][0], box[p2][1]), fill=colors[i % len(colors)],
+                              width=2)
 
         output_buffer = BytesIO()
         img_detected.save(output_buffer, format='JPEG')
