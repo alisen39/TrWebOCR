@@ -40,27 +40,26 @@ Windows和MacOS系统下可通过构建Docker镜像来使用，暂不支持直�
 1. 安装python3.7  
     推荐使用miniconda
     
-2. 执行install.py  
-```
-python install.py
-```  
-
-3. 安装依赖包  
+2. 安装依赖包  
 ``` shell script
 pip install -r requirements.txt
 ```  
 
-4. 运行  
-``` shell script
-python backend/main.py
-```  
-
-项目默认运行在8089端口，看到以下输出则代表运行成功：  
+3. 运行  
+项目默认运行在8089端口，默认不开启gpu：  
 ``` shell script
 python backend/main.py [--port=8089][--open_gpu=0]
 # --port 指定运行时端口号 默认是8089  
 # --open_gpu 是否开启gpu 默认是0(不开启），可设置为1（开启）
 ```
+
+    看到以下输出则代表安装成功： 
+```shell script
+tr 2.3.0 https://github.com/myhub/tr
+Server is running: http://192.168.31.95:8089
+Now version is: cpu
+```   
+
 ### Docker部署  
 使用 Dockerfile 构建 或者直接 Pull镜像  
 ```shell script
