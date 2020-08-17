@@ -53,7 +53,7 @@ python backend/main.py [--port=8089][--open_gpu=0]
 # --open_gpu 是否开启gpu 默认是0(不开启），可设置为1（开启）
 ```
 
-    看到以下输出则代表安装成功： 
+看到以下输出则代表安装成功： 
 ```shell script
 tr 2.3.0 https://github.com/myhub/tr
 Server is running: http://192.168.31.95:8089
@@ -117,22 +117,14 @@ res = requests.post(url=url, data={'img': img_b64})
 ![验证码识别](https://images.alisen39.com/20200501173211.png)
 
 ## 更新记录  
+* 2020年08月17日  
+    更新Dockerfile，docker镜像支持tr2.3  
+    
 * 2020年07月30日  
     支持启动命令选择GPU/CPU  
 
 * 2020年07月26日  
 	更新tr2.0版，支持GPU  
-
-* 2020年07月23日  
-    修改README  
-    
-* 2020年06月14日  
-    优化Dockerfile，解决Build失败报错
-    Dockerfile需要下载的部分使用国内源，提高build速度
-    增加supervisor守护python进程
-
-* 2020年06月13日  
-    增加接口调用示例  
 
 [更多记录 >>>](https://github.com/alisen39/TrWebOCR/blob/master/updateHistory.md)  
 
@@ -144,6 +136,6 @@ Apache 2.0
 * 感谢 [myhub](https://github.com/myhub) 和它的开源项目[Tr](https://github.com/myhub/tr) 
 
 ## 最后  
-项目在[GitHub](https://github.com/alisen39/TrWebOCR)和[码云](https://gitee.com/alisen39/TrWebOCR)上同步更新，国内朋友可以通过码云clone项目~  
+项目在 [GitHub](https://github.com/alisen39/TrWebOCR) 和 [码云](https://gitee.com/alisen39/TrWebOCR) 上同步更新，国内朋友可以通过码云clone项目~  
   
 如果你也喜欢这个项目，不妨给个star (^.^)✨

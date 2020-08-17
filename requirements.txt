@@ -1,6 +1,5 @@
 libtorch==1.2.0.1
 numpy==1.14.6
 opencv-python==3.4.4.19
-Pillow==5.4.0
+Pillow==7.1.0
 tornado==6.0.4
-tr
