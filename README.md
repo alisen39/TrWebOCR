@@ -117,14 +117,14 @@ res = requests.post(url=url, data={'img': img_b64})
 ![验证码识别](https://images.alisen39.com/20200501173211.png)
 
 ## 更新记录  
+* 2022年01月16日  
+    更新接口，增加不返回图片参数
+
 * 2020年08月17日  
     更新Dockerfile，docker镜像支持tr2.3  
     
 * 2020年07月30日  
     支持启动命令选择GPU/CPU  
-
-* 2020年07月26日  
-	更新tr2.0版，支持GPU  
 
 [更多记录 >>>](https://github.com/alisen39/TrWebOCR/blob/master/updateHistory.md)  
 
