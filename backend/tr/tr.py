@@ -26,11 +26,15 @@ RECT_SIZE = 6
 ORT_SIZE = 256
 _BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
+_cwd = os.getcwd()
+os.chdir(_BASEDIR)
+
 if platform.system() == "Windows":
     raise NotImplementedError()
 else:
     _libc = ctypes.cdll.LoadLibrary(os.path.join(_BASEDIR, 'libtr.so'))
 assert _libc is not None
+os.chdir(_cwd)
 
 _libc.tr_init.argtypes = (
     ctypes.c_int,
