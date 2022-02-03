@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "ant-design-vue": "^1.5.3",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "core-js": "^3.6.4",
     "highlight.js": "^10.0.1",
     "stylus": "^0.54.7",
