@@ -12,7 +12,7 @@
     "ant-design-vue": "^1.5.3",
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
-    "highlight.js": "^10.0.1",
+    "highlight.js": "^10.4.1",
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",
     "vue": "^2.6.11",
