@@ -105,9 +105,80 @@ def img_to_base64(img_path):
     
 url = 'http://192.168.31.108:8089/api/tr-run/'
 img_b64 = img_to_base64('./img1.png')
-res = requests.post(url=url, data={'img': img_b64})
+res = requests.post(url=url, data={'img': img_b64, 'compress': 0})
 ```
 
+* Golang使用base64
+```go
+package main
+
+import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+)
+
+const (
+	ocrURL = "http://175.178.104.64:8079/api/tr-run/"
+	file   = "./pic/test.jpg"
+)
+
+type Response struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+	Data struct {
+		RawOut      [][]any `json:"raw_out"`
+		SpeedTime   float64 `json:"speed_time"`
+		ImgDetected string  `json:"img_detected"`
+	} `json:"data"`
+}
+
+func main() {
+	// Read the photo file
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	// Encode the file data as base64
+	encoded := base64.StdEncoding.EncodeToString(data)
+	// log.Print(encoded)
+	// Create the HTTP request
+	payload := url.Values{
+		"img":      {encoded},
+		"compress": {"0"},
+	}
+
+	// 创建请求
+	resp, err := http.PostForm(ocrURL, payload)
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	defer resp.Body.Close()
+
+	// 处理响应
+	if resp.StatusCode != http.StatusOK {
+		fmt.Errorf("failed to upload file: %s", resp.Status)
+	}
+
+	// 读取响应内容
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	// unmashall body to response struct
+	var response Response
+	err = json.Unmarshal(responseBody, &response)
+	if err != nil {
+		fmt.Print(err)
+	}
+}
+```
 
 
 ## 效果展示  
